@@ -42,7 +42,8 @@ class NoGenomeDataFoundException(Exception):
 
 class GenomeManager:
     def __init__(self, gid: str):
-        # TODO check valid gids.
+
+        # TODO (kenny) check valid gids.
         self._gid = gid
 
     def download_gtf(self) -> Path:
@@ -50,7 +51,7 @@ class GenomeManager:
         g_data = GenomeRegistry.get(self._gid)
         if g_data is None:
             raise NoGenomeRegisteredException(
-                f"{self._gid} is not registerd with the GenomeManager."
+                f"{self._gid} is not registered with the GenomeManager."
             )
 
         gtf = g_data.gtf

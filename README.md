@@ -1,15 +1,16 @@
-genome
+lgenome
 ---
 
 A python package to manage curated genomic resources for bioinformatics workflows.
 
 ### Introduction
 
-This library is a lightweight wrapper over AWS S3.
+This library is a lightweight wrapper over AWS S3 that fetches curated "genome
+resources" under a stable interface and naming system.
 
-For each genome managed by [latch](latch.bio), a collection of URLS pointing to well-defined
-"genome resources" is maintained. The schema holding these URLS is stable across
-managed genomes and can be represented by the below class. 
+For each genome managed by [latch](latch.bio), a collection of URLS pointing to
+well-defined "genome resources" is maintained and represented by the below
+class:
 
 ```
 class GenomeData:
