@@ -29,7 +29,25 @@ GenomeRegistry = {
         ref_trans="s3://latch-genomes/Homo_sapiens/RefSeq/GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.transcripts.decoy.fna",
         salmon_index="s3://latch-genomes/Homo_sapiens/RefSeq/GRCh38.p14/salmon_index/",
         STAR_index="s3://latch-genomes/Homo_sapiens/RefSeq/GRCh38.p14/STAR_index/",
-    )
+    ),
+    "RefSeq_T2T_CHM13v2_0": GenomeData(
+        gtf="s3://latch-genomes/Homo_sapiens/RefSeq/T2T_CHM13v2_0/stripped.gtf",
+        ref_genome="s3://latch-genomes/Homo_sapiens/RefSeq/T2T_CHM13v2_0/genome.fna",
+        ref_trans="s3://latch-genomes/Homo_sapiens/RefSeq/T2T_CHM13v2_0/genome.transcripts.fa",
+        salmon_index="s3://latch-genomes/Homo_sapiens/RefSeq/T2T_CHM13v2_0/salmon_index/",
+    ),
+    "RefSeq_R64": GenomeData(
+        gtf="s3://latch-genomes/Saccharomyces cerevisiae/RefSeq/R64/stripped.gtf",
+        ref_genome="s3://latch-genomes/Saccharomyces cerevisiae/RefSeq/R64/genome.fna",
+        ref_trans="s3://latch-genomes/Saccharomyces cerevisiae/RefSeq/R64/genome.transcripts.fa",
+        salmon_index="s3://latch-genomes/Saccharomyces cerevisiae/RefSeq/R64/salmon_index/",
+    ),
+    "RefSeq_GRCm39": GenomeData(
+        gtf="s3://latch-genomes/Mus musculus/RefSeq/GRCm39/stripped.gtf",
+        ref_genome="s3://latch-genomes/Mus musculus/RefSeq/GRCm39/genome.fna",
+        ref_trans="s3://latch-genomes/Mus musculus/RefSeq/GRCm39/genome.transcripts.fa",
+        salmon_index="s3://latch-genomes/Mus musculus/RefSeq/GRCm39/salmon_index/",
+    ),
 }
 
 
