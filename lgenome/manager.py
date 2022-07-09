@@ -19,6 +19,8 @@ class GenomeData:
 
 
 def run(cmd: List[str]):
+    full_command = ' '.join(cmd)
+    print(f"Running '{full_command}'")
     subprocess.run(cmd, check=True)
 
 
@@ -74,7 +76,7 @@ class GenomeManager:
             )
         return g_data
 
-    def download_gtf(self) -> Path:
+    def download_gtf(self, show_progress: bool = False) -> Path:
 
         g_data = self.get_genome_data()
 
@@ -86,15 +88,10 @@ class GenomeManager:
 
         local_gtf = Path.cwd() / Path(urlparse(gtf).path).name
 
-        run(
-            [
-                "aws",
-                "s3",
-                "cp",
-                gtf,
-                str(local_gtf.resolve()),
-            ]
-        )
+        command = ["aws", "s3", "cp", gtf, str(local_gtf.resolve())]
+        if not show_progress:
+            command.append("--no-progress")
+        run(command)
 
         return local_gtf
 
@@ -146,7 +143,7 @@ class GenomeManager:
 
         return local_ref_trans
 
-    def download_salmon_index(self) -> Path:
+    def download_salmon_index(self, show_progress: bool = True) -> Path:
 
         g_data = self.get_genome_data()
 
@@ -158,15 +155,11 @@ class GenomeManager:
 
         os.mkdir("salmon_index")
         local_salmon_index = Path("salmon_index").resolve()
-        run(
-            [
-                "aws",
-                "s3",
-                "sync",
-                salmon_index,
-                str(local_salmon_index),
-            ]
-        )
+
+        command = ["aws", "s3", "sync", salmon_index, str(local_salmon_index)]
+        if not show_progress:
+            command.append("--no-progress")
+        run(command)
 
         return local_salmon_index
 
