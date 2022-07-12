@@ -15,7 +15,6 @@ class GenomeData:
     ref_genome: str
     ref_trans: Optional[str]
     salmon_index: Optional[str]
-    STAR_index: Optional[str]
 
 
 def run(cmd: List[str]):
@@ -30,7 +29,6 @@ GenomeRegistry = {
         ref_genome="s3://latch-genomes/Homo_sapiens/RefSeq/GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna",
         ref_trans="s3://latch-genomes/Homo_sapiens/RefSeq/GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.transcripts.decoy.fna",
         salmon_index="s3://latch-genomes/Homo_sapiens/RefSeq/GRCh38.p14/salmon_index/",
-        STAR_index="s3://latch-genomes/Homo_sapiens/RefSeq/GRCh38.p14/STAR_index/",
     ),
     "RefSeq_T2T_CHM13v2_0": GenomeData(
         gtf="s3://latch-genomes/Homo_sapiens/RefSeq/T2T_CHM13v2_0/stripped.gtf",
@@ -162,27 +160,3 @@ class GenomeManager:
         run(command)
 
         return local_salmon_index
-
-    def download_STAR_index(self) -> Path:
-
-        g_data = self.get_genome_data()
-
-        STAR_index = g_data.STAR_index
-        if STAR_index is None:
-            raise NoGenomeResourceFoundException(
-                f"There is no STAR index resource stored for {self._gid} within the GenomeManager."
-            )
-
-        os.mkdir("STAR_index")
-        local_STAR_index = Path("STAR_index").resolve()
-        run(
-            [
-                "aws",
-                "s3",
-                "sync",
-                STAR_index,
-                str(local_STAR_index),
-            ]
-        )
-
-        return local_STAR_index
