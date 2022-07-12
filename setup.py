@@ -14,7 +14,7 @@ if CURRENT_PYTHON < MIN_PYTHON_VERSION:
 
 setup(
     name="lgenome",
-    version="v0.0.4",
+    version="v0.0.5",
     author_email="kenny@latch.bio",
     description="A python package to manage curated genomic resources for bioinformatics workflows.",
     packages=find_packages(),
