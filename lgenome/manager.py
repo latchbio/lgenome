@@ -18,7 +18,7 @@ class GenomeData:
 
 
 def run(cmd: List[str]):
-    full_command = ' '.join(cmd)
+    full_command = " ".join(cmd)
     print(f"Running '{full_command}'")
     subprocess.run(cmd, check=True)
 
