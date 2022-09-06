@@ -35,7 +35,7 @@ class LGenomeS5cmdBackend(LGenomeBackend):
         run([
             "s5cmd",
             "sync",
-            src,
+            src + "*",
             dst
         ])
 
