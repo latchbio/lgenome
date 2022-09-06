@@ -1,12 +1,68 @@
 import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 from urllib.parse import urlparse
+from warnings import warn
 
 from dataclasses_json import dataclass_json
 
+
+def run(cmd: List[str]):
+    full_command = " ".join(cmd)
+    print(f"Running '{full_command}'")
+    subprocess.run(cmd, check=True)
+
+class LGenomeBackend:
+    def cp(self, src: str, dst: str, *, show_progress: bool = True):
+        raise NotImplementedError()
+
+    def sync(self, src: str, dst: str, *, show_progress: bool = True):
+        raise NotImplementedError()
+
+class LGenomeS5cmdBackend(LGenomeBackend):
+    def cp(self, src: str, dst: str, *, show_progress: bool = True):
+        run([
+            "s5cmd",
+            "cp",
+            src,
+            dst
+        ])
+
+    def sync(self, src: str, dst: str, *, show_progress: bool = True):
+        run([
+            "s5cmd",
+            "sync",
+            src,
+            dst
+        ])
+
+class LGenomeS3Backend(LGenomeBackend):
+    def cp(self, src: str, dst: str, *, show_progress: bool = True):
+        cmd = [
+            "aws",
+            "s3",
+            "cp",
+            src,
+            dst
+        ]
+        if not show_progress:
+            cmd.append("--no-progress")
+        run(cmd)
+
+    def sync(self, src: str, dst: str, *, show_progress: bool = True):
+        cmd = [
+            "aws",
+            "s3",
+            "sync",
+            src,
+            dst
+        ]
+        if not show_progress:
+            cmd.append("--no-progress")
+        run(cmd)
 
 @dataclass_json
 @dataclass
@@ -15,12 +71,6 @@ class GenomeData:
     ref_genome: str
     ref_trans: Optional[str]
     salmon_index: Optional[str]
-
-
-def run(cmd: List[str]):
-    full_command = " ".join(cmd)
-    print(f"Running '{full_command}'")
-    subprocess.run(cmd, check=True)
 
 
 GenomeRegistry = {
@@ -60,10 +110,21 @@ class NoGenomeResourceFoundException(Exception):
 
 
 class GenomeManager:
-    def __init__(self, gid: str):
+    def __init__(self, gid: str, *, backend: Optional[LGenomeBackend] = None):
 
         # TODO (kenny) check valid gids.
         self._gid = gid
+
+
+        self.backend = None
+        if self.backend is None:
+            if shutil.which("s5cmd") is not None:
+                self.backend = LGenomeS5cmdBackend()
+            if shutil.which("s3") is not None:
+                self.backend = LGenomeS3Backend()
+
+        if self.backend is None:
+            warn("No available lgenome backend")
 
     def get_genome_data(self) -> GenomeData:
 
@@ -86,10 +147,8 @@ class GenomeManager:
 
         local_gtf = Path.cwd() / Path(urlparse(gtf).path).name
 
-        command = ["aws", "s3", "cp", gtf, str(local_gtf.resolve())]
-        if not show_progress:
-            command.append("--no-progress")
-        run(command)
+        assert self.backend is not None
+        self.backend.cp(gtf, str(local_gtf.resolve()), show_progress=show_progress)
 
         return local_gtf
 
@@ -105,15 +164,8 @@ class GenomeManager:
 
         local_ref_genome = Path.cwd() / Path(urlparse(ref_genome).path).name
 
-        run(
-            [
-                "aws",
-                "s3",
-                "cp",
-                ref_genome,
-                str(local_ref_genome.resolve()),
-            ]
-        )
+        assert self.backend is not None
+        self.backend.cp(ref_genome, str(local_ref_genome.resolve()))
 
         return local_ref_genome
 
@@ -129,15 +181,8 @@ class GenomeManager:
 
         local_ref_trans = Path.cwd() / Path(urlparse(ref_trans).path).name
 
-        run(
-            [
-                "aws",
-                "s3",
-                "cp",
-                ref_trans,
-                str(local_ref_trans.resolve()),
-            ]
-        )
+        assert self.backend is not None
+        self.backend.cp(ref_trans, str(local_ref_trans.resolve()))
 
         return local_ref_trans
 
@@ -154,9 +199,7 @@ class GenomeManager:
         os.mkdir("salmon_index")
         local_salmon_index = Path("salmon_index").resolve()
 
-        command = ["aws", "s3", "sync", salmon_index, str(local_salmon_index)]
-        if not show_progress:
-            command.append("--no-progress")
-        run(command)
+        assert self.backend is not None
+        self.backend.sync(salmon_index, str(local_salmon_index), show_progress=show_progress)
 
         return local_salmon_index
