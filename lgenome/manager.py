@@ -15,6 +15,7 @@ def run(cmd: List[str]):
     print(f"Running '{full_command}'")
     subprocess.run(cmd, check=True)
 
+
 class LGenomeBackend:
     def cp(self, src: str, dst: str, *, show_progress: bool = True):
         raise NotImplementedError()
@@ -22,47 +23,28 @@ class LGenomeBackend:
     def sync(self, src: str, dst: str, *, show_progress: bool = True):
         raise NotImplementedError()
 
+
 class LGenomeS5cmdBackend(LGenomeBackend):
     def cp(self, src: str, dst: str, *, show_progress: bool = True):
-        run([
-            "s5cmd",
-            "cp",
-            src,
-            dst
-        ])
+        run(["s5cmd", "cp", src, dst])
 
     def sync(self, src: str, dst: str, *, show_progress: bool = True):
-        run([
-            "s5cmd",
-            "sync",
-            src + "*",
-            dst
-        ])
+        run(["s5cmd", "sync", src + "*", dst])
+
 
 class LGenomeS3Backend(LGenomeBackend):
     def cp(self, src: str, dst: str, *, show_progress: bool = True):
-        cmd = [
-            "aws",
-            "s3",
-            "cp",
-            src,
-            dst
-        ]
+        cmd = ["aws", "s3", "cp", src, dst]
         if not show_progress:
             cmd.append("--no-progress")
         run(cmd)
 
     def sync(self, src: str, dst: str, *, show_progress: bool = True):
-        cmd = [
-            "aws",
-            "s3",
-            "sync",
-            src,
-            dst
-        ]
+        cmd = ["aws", "s3", "sync", src, dst]
         if not show_progress:
             cmd.append("--no-progress")
         run(cmd)
+
 
 @dataclass_json
 @dataclass
@@ -115,7 +97,6 @@ class GenomeManager:
         # TODO (kenny) check valid gids.
         self._gid = gid
 
-
         self.backend = None
         if self.backend is None:
             if shutil.which("s5cmd") is not None:
@@ -124,7 +105,9 @@ class GenomeManager:
                 self.backend = LGenomeS3Backend()
 
         if self.backend is None:
-            warn("No available lgenome backend")
+            warn(
+                "No available lgenome backend - install an appropriate blobstore CLI (eg. s3 or s5cmd.)"
+            )
 
     def get_genome_data(self) -> GenomeData:
 
@@ -200,6 +183,8 @@ class GenomeManager:
         local_salmon_index = Path("salmon_index").resolve()
 
         assert self.backend is not None
-        self.backend.sync(salmon_index, str(local_salmon_index), show_progress=show_progress)
+        self.backend.sync(
+            salmon_index, str(local_salmon_index), show_progress=show_progress
+        )
 
         return local_salmon_index
